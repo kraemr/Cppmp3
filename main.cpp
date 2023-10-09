@@ -11,6 +11,7 @@ Playlists:
 They will look like this:
 {"Playlistname":[{name:"Songname",path:"absolutepath"},{...},{...}]}
 
+To determine Intensity create a sum of n values and divide trough n
 
 */
 
