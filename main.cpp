@@ -10,10 +10,34 @@ TODO:
 Playlists:
 They will look like this:
 {"Playlistname":[{name:"Songname",path:"absolutepath"},{...},{...}]}
+To determine Intensity create a sum of n values and divide trough 
+// https://www.matheretter.de/wiki/shazam-pulse-code-modulation
+n*/
 
-To determine Intensity create a sum of n values and divide trough n
 
-*/
+long long unsigned int sumSample(unsigned char* buffer,unsigned int bytesps,unsigned int start){
+	long long unsigned int res=0;
+	for(int i=start;i>=start-bytesps;i--){
+		res += buffer[i];
+	}
+	return res;
+}
+
+// Divides the samples summed intensity into n blocks
+std::vector<unsigned int> blockSampleSums(unsigned char * buffer,unsigned int nblocks,unsigned int bytesps){
+// TODO:
+}
+
+
+
+// Takes all PCM Samples and sum them together
+// bytesps is bytes per sample with 16 bit stereo --> 4 bytes
+long long unsigned int getOverallIntensity(unsigned char* buffer, unsigned int buffer_size,unsigned int bytesps){
+	long long unsigned int res=0; 
+	for(unsigned int i  = bytesps; i < buffer_size; i+=bytesps){
+		sumSample(buffer,bytesps,i);
+	}
+}
 
 
 int main(int argc, char *argv[])
@@ -45,7 +69,7 @@ int main(int argc, char *argv[])
     format.matrix = 0;
     dev = ao_open_live(driver, &format, NULL);
     printf("%u",buffer_size);
-   while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK){
+    while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK){
 	        for (int i = 0 ; i < buffer_size; i++){
 //		printf("%d ",buffer[i]);
 		}
