@@ -1,12 +1,16 @@
 #include <ao/ao.h>
 #include <mpg123.h>
 #include <stdio.h>
-
+#include <vector>
+#include "include/raylib.h"
 #define BITS 8
 
 
-/*
-TODO:
+
+
+
+
+/*TODO:
 Playlists:
 They will look like this:
 {"Playlistname":[{name:"Songname",path:"absolutepath"},{...},{...}]}
@@ -15,30 +19,12 @@ To determine Intensity create a sum of n values and divide trough
 n*/
 
 
-long long unsigned int sumSample(unsigned char* buffer,unsigned int bytesps,unsigned int start){
-	long long unsigned int res=0;
-	for(int i=start;i>=start-bytesps;i--){
-		res += buffer[i];
-	}
-	return res;
+// for now this uses raylib
+// Also this will handle all the ui
+void init_shader_vis(int width,int height){
+    InitWindow(width, height, "raylib [core] example - input mouse wheel");
+    SetTargetFPS(30);               // Set our game to run at 60 frames-per-second
 }
-
-// Divides the samples summed intensity into n blocks
-std::vector<unsigned int> blockSampleSums(unsigned char * buffer,unsigned int nblocks,unsigned int bytesps){
-// TODO:
-}
-
-
-
-// Takes all PCM Samples and sum them together
-// bytesps is bytes per sample with 16 bit stereo --> 4 bytes
-long long unsigned int getOverallIntensity(unsigned char* buffer, unsigned int buffer_size,unsigned int bytesps){
-	long long unsigned int res=0; 
-	for(unsigned int i  = bytesps; i < buffer_size; i+=bytesps){
-		sumSample(buffer,bytesps,i);
-	}
-}
-
 
 int main(int argc, char *argv[])
 {
@@ -52,8 +38,7 @@ int main(int argc, char *argv[])
     ao_sample_format format;
     int channels, encoding;
     long rate;
-
-    if(argc < 2)exit(0);
+    if(argc < 2) exit(0);
     ao_initialize();
     driver = ao_default_driver_id();
     mpg123_init();
@@ -68,14 +53,27 @@ int main(int argc, char *argv[])
     format.byte_format = AO_FMT_NATIVE;
     format.matrix = 0;
     dev = ao_open_live(driver, &format, NULL);
-    printf("%u",buffer_size);
-    while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK){
-	        for (int i = 0 ; i < buffer_size; i++){
-//		printf("%d ",buffer[i]);
-		}
-//		printf("\n\n\n\n");
-		ao_play(dev, (char*)buffer, done);
-	}
+    fprintf(stdout," %u  ",buffer_size);
+    unsigned int nblocks=0;
+    unsigned int res = 0;
+    int boxPosY=0;
+    init_shader_vis(600,600);
+    while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK && !WindowShouldClose() ){
+	    res = 0;
+	    nblocks++;
+	    for (int i = 0; i < buffer_size; i++){
+			res += buffer[i];
+	    }
+	    boxPosY = res/ ( buffer_size/2) * 2;
+	    BeginDrawing();
+            ClearBackground(RAYWHITE);
+	    DrawRectangle(0,boxPosY,80,80,GREEN);
+	    EndDrawing();
+	    printf("summed-Intensity%u , blockid:%d, buffer_size:%u\n",res/ ( buffer_size/2),nblocks,buffer_size);
+//		fprintf(fp,"\n\n\n\n");
+	    ao_play(dev, (char*)buffer, done);
+    }
+    CloseWindow();        // Close window and OpenGL context
     free(buffer);
     ao_close(dev);
     mpg123_close(mh);
