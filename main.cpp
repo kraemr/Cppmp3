@@ -3,13 +3,10 @@
 #include <stdio.h>
 #include <vector>
 #include "include/raylib.h"
+#include "DFT.hpp"
+
+
 #define BITS 8
-
-
-
-
-
-
 /*TODO:
 Playlists:
 They will look like this:
@@ -57,22 +54,25 @@ int main(int argc, char *argv[])
     unsigned int nblocks=0;
     unsigned int res = 0;
     int boxPosY=0;
-    init_shader_vis(600,600);
+    init_shader_vis(1024,1024);
+
     while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK && !WindowShouldClose() ){
 	    res = 0;
 	    nblocks++;
-	    for (int i = 0; i < buffer_size; i++){
-			res += buffer[i];
-	    }
-	    boxPosY = res/ ( buffer_size/2) * 2;
+            std::vector<double> spectrum = traceSpectrum(buffer,buffer_size,1024);
 	    BeginDrawing();
             ClearBackground(RAYWHITE);
-	    DrawRectangle(0,boxPosY,80,80,GREEN);
-	    EndDrawing();
-	    printf("summed-Intensity%u , blockid:%d, buffer_size:%u\n",res/ ( buffer_size/2),nblocks,buffer_size);
-//		fprintf(fp,"\n\n\n\n");
-	    ao_play(dev, (char*)buffer, done);
-    }
+	    printf("spectrum size: %d",spectrum.size());
+	    int y=16;
+	    for (int i = 0; i < spectrum.size();i+=1){
+		    DrawLine(10,y,spectrum[i],y,BLACK);
+		    y++;
+		}
+            EndDrawing();
+            ao_play(dev, (char*)buffer, done); // put this in its own thread, so that music and animation dont fight for cpu ressources
+
+   }
+
     CloseWindow();        // Close window and OpenGL context
     free(buffer);
     ao_close(dev);
