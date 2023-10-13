@@ -9,15 +9,30 @@
 #include <thread>
 #include <iostream>
 #define BITS 8
+#define DEBUG
+
 
 /*TODO:
+
 Playlists:
 They will look like this:
 {"Playlistname":[{name:"Songname",path:"absolutepath"},{...},{...}]}
 To determine Intensity create a sum of n values and divide trough 
 // https://www.matheretter.de/wiki/shazam-pulse-code-modulation
-n*/
 
+Audio Playing / visualizing:
+
+For Audio Playing there will be a buffer of 16 minutes(4MB if 16bit and stereo) that will be filled by mp3 data
+This can be changed with settings for more or less buffering
+
+if you want to skip around in the song it will start filling the buffer from bytes at that location
+
+location can be found by using bytes_per_frame and ms per frame.
+Basically we calc the number of frames per second (frames * bytes_per_frame)
+first second (8 bit mono) --> start 0  end 24 * 1152
+second second --> start 24*1152  end  24 * 1152 * 2
+
+*/
 bool musicplayed= false;
 bool g_samplebuffer_alloced = false;
 std::mutex mtx;
@@ -43,11 +58,30 @@ void init_shader_vis(int width,int height){
 
 
 void threaded_ao_play(){
-	ao_play(dev, (char*)g_samplebuffer, done); // put this in its own thread, so that music and animation dont fight for cpu ressources
-//	std::unique_lock<std::mutex> lock(mtx);
-//	musicplayed = true;
-//	cv.notify_one();
+//	ao_play(dev, (char*)g_samplebuffer, done); // put this in its own thread, so that music and animation dont fight for cpu ressources
 }
+
+void mpg_print_fmt(){
+	std::cout << "bits: "<< format.bits << " rate:"<<format.rate << " channels:"<<format.channels <<  " ,byte_fmt:"<<format.byte_format << std::endl;
+}
+
+// gets the frame duration
+//https://stackoverflow.com/questions/6220660/calculating-the-length-of-mp3-frames-in-milliseconds
+double get_frame_duration_ms_MP3(unsigned int sampleratehz){
+	return 1152.0 / double(sampleratehz) * 1000.0; // This should be correct ?!
+//	return double(double(samples)/double(sampleratehz))*1000.0; // test if this is accurate enough
+//	unsigned int bytesinframe = 0;
+//	bytesinframe = 1152 * ((format.bits / 8) * channels); // a standard mp3 has 1152 bytes in a frame
+}
+
+
+// converts milliseconds to seconds
+double milli_secs(double millisec){
+	return millisec / 1000.0;
+}
+
+
+
 
 void initPlay(char * abspath){
 	mpg123_init();
@@ -80,29 +114,31 @@ void cleanup(){
 
 int main(int argc, char *argv[])
 {
+    SetTraceLogLevel(LOG_ERROR);
     if(argc < 2) exit(0);
     ao_initialize();
     driver = ao_default_driver_id();
     initPlay(argv[1]);
     dev = ao_open_live(driver, &format, NULL);
-    fprintf(stdout,"Buffer Size: %u  ",buffer_size);
+    mpg_print_fmt();
+    std::cout << "ms per frame: " << get_frame_duration_ms_MP3(format.rate) << std::endl;
+    std::cout << "bytes per frame: " << (format.bits/8 * channels * 1152) << std::endl;
     unsigned int nblocks=0;
     unsigned int res = 0;
     int boxPosY=0;
-    init_shader_vis(1900,1024);
+//    init_shader_vis(1900,1024);
     while (mpg123_read(mh, g_samplebuffer, buffer_size, &done) == MPG123_OK && !WindowShouldClose() ){
-//	    std::thread worker(threaded_ao_play);
-	    std::vector<double> spectrum = traceSpectrum(g_samplebuffer,buffer_size,1024,10000);
-	    BeginDrawing();
-            ClearBackground(RAYWHITE);
-	    int x=0;
-	    for (int i = 0; i < spectrum.size();i+=8){
-		    DrawLine(x,spectrum[i], x,0,RED);
-		    x++;
-	    }
-            EndDrawing();
+//	    std::vector<double> spectrum = traceSpectrum(g_samplebuffer,buffer_size,1024,10000);
+//	    BeginDrawing();
+//            ClearBackground(RAYWHITE);
+//	    for (int i = 0; i < spectrum.size();i+=8){
+//		    DrawLine(x,spectrum[i], x,0,RED);
+//		    x++;
+//	    }
+//            EndDrawing();
 	    threaded_ao_play();
-   }
-   cleanup();
+//            ao_play(dev, (char*)g_samplebuffer, done); // put this in its own thread, so that music and animation dont fight for cpu ressources
+ }
+//   cleanup();
    return 0;
 }
