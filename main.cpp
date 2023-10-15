@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <vector>
 #include "include/raylib.h"
-#include "DFT.hpp"
+#include "include/DFT.hpp"
 #include <iostream>
 #include <cmath> // implement round() later to avoid deps
 #include <thread>
@@ -13,7 +13,7 @@
 #define GLSL_AUDIO_NEXT_SONG 2
 #define GLSL_AUDIO_PREV_SONG 3
 #define BITS 8
-#define DEBUG
+//#define DEBUG
 
 
 /*TODO:
@@ -62,8 +62,8 @@ double fps=0; // MPEG3Frames per second
 double rawfps=0; // UNROUNDED frames per second
 long long unsigned int bytesread = 0;
 bool paused=false;
-
 #define FRAMES_PLAY_PER_READ 4 // This would create a delay when pressing stop,play ..., but lessens the load on cpu
+
 // for now this uses raylib
 // Also this will handle all the ui
 void init_shader_vis(int width,int height){
@@ -75,26 +75,26 @@ void init_shader_vis(int width,int height){
 
 
 // make this function somehow return that it has finished playing
-void resume_play_at_sec(unsigned int sec){
+void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 	#ifdef DEBUG
 		std::cout << "Buffer Size for Playing Audio: " << bytesperframe * FRAMES_PLAY_PER_READ << std::endl;
 	#endif
 	unsigned char buf[bytesperframe * FRAMES_PLAY_PER_READ]={0};
-        mpg123_seek_frame(mh,unsigned( fps * sec ),SEEK_SET); // Its not 100% accurate a second here is like 1008 ms instead of 1000 but thats fine ... i think
+        mpg123_seek_frame(mh,frame,SEEK_SET); // Its not 100% accurate a second here is like 1008 ms instead of 1000 but thats fine ... i think
 	unsigned int mpg123_ret = MPG123_OK;
 	long unsigned int done = 0;
 	long unsigned int framesplayed = 0;
 	long unsigned int current_sec = 0;
+	unsigned int ao_ret = 0;
+
 	while (paused == false && mpg123_ret == MPG123_OK){
 		mpg123_ret = mpg123_read(mh, buf ,bytesperframe * FRAMES_PLAY_PER_READ, &done);
-		ao_play(dev,(char*)buf,bytesperframe * FRAMES_PLAY_PER_READ);
+                *frame_ref += FRAMES_PLAY_PER_READ;
+		ao_ret = ao_play(dev,(char*)buf,bytesperframe * FRAMES_PLAY_PER_READ);
 		framesplayed += FRAMES_PLAY_PER_READ;
-		if (framesplayed / fps >= 1) {
-			current_sec +=1;
-			framesplayed = 0;
-		}
 		#ifdef DEBUG
-//			std::cout << "current Second: "<< current_sec << std::endl;
+			std::cout << "current Second: "<< current_sec << std::endl;
+			std::cout << "ao_ret: " << ao_ret << std::endl;
 			std::cout << "done: " << done << std::endl;
 		#endif
 	}
@@ -158,31 +158,29 @@ int main(int argc, char *argv[])
     dev = ao_open_live(driver, &format, NULL);
     mpg_print_fmt();
     bool exit = false;
-    unsigned int sec = 0;
+    unsigned int frame = 0; // current frame
     unsigned int cmd = 0;
     paused = true;
+    bool thread_running = false;
     std::thread t1;
 
     while(!exit){
 	std::cin >> cmd;
 	if(cmd == 0){
 		paused = false;
-		t1 = std::thread(resume_play_at_sec,200);
+		t1 = std::thread(resume_play_at_frame,frame,&frame);
+		thread_running = true;
 	}else if(cmd == 1){
 		paused = true;
 		t1.join();
+		thread_running = false;
+	}else if(cmd == 2){ // load new mp3 file
+		char path[256]={0};
+		std::cout << "Enter The Path for the mp3 file: ";
+		std::cin >> path;
+		initPlay(path);
 	}
     }
-	   // std::vector<double> spectrum = traceSpectrum(g_samplebuffer,bytespf,1024,0);
-/*	    BeginDrawing();
-            ClearBackground(RAYWHITE);
-	    int x = 0;
-	    for (int i = 0; i < spectrum.size();i+=1){
-		    DrawLine(x,spectrum[i], x,0,RED);
-		    x++;
-	    }
-            EndDrawing();*/
-//	    threaded_ao_play();
    cleanup();
    return 0;
 }
