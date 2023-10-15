@@ -13,7 +13,7 @@
 #define GLSL_AUDIO_NEXT_SONG 2
 #define GLSL_AUDIO_PREV_SONG 3
 #define BITS 8
-//#define DEBUG
+#define DEBUG
 
 
 /*TODO:
@@ -48,7 +48,7 @@ However i would have to put ao_play in its own thread to be able to pause, skip 
 bool musicplayed= false;
 bool g_samplebuffer_alloced = false;
 mpg123_handle * mh;
-size_t done;
+//size_t done;
 int err;
 int driver;
 size_t buffer_size;
@@ -72,6 +72,9 @@ void init_shader_vis(int width,int height){
 }
 
 
+
+
+// make this function somehow return that it has finished playing
 void resume_play_at_sec(unsigned int sec){
 	#ifdef DEBUG
 		std::cout << "Buffer Size for Playing Audio: " << bytesperframe * FRAMES_PLAY_PER_READ << std::endl;
@@ -91,7 +94,8 @@ void resume_play_at_sec(unsigned int sec){
 			framesplayed = 0;
 		}
 		#ifdef DEBUG
-			std::cout << "current Second: "<< current_sec << std::endl;
+//			std::cout << "current Second: "<< current_sec << std::endl;
+			std::cout << "done: " << done << std::endl;
 		#endif
 	}
 }
@@ -163,7 +167,7 @@ int main(int argc, char *argv[])
 	std::cin >> cmd;
 	if(cmd == 0){
 		paused = false;
-		t1 = std::thread(resume_play_at_sec,0);
+		t1 = std::thread(resume_play_at_sec,200);
 	}else if(cmd == 1){
 		paused = true;
 		t1.join();
