@@ -14,11 +14,11 @@
 #define GLSL_AUDIO_PREV_SONG 3
 #define BITS 8
 //#define DEBUG
-
-
 /*TODO:
-Ok so the simplest way to visualize audio would be to just run a second program/thread, that reads from the alsa device and displays the currently played audio
-This has the side effect of also visualizing audio, that does not come from the music player ..., but that should be fine for now.
+Implement a ringbuffer for auiovis/ mp3 playing,
+where there will be two pointers, one where mpg frames are currently played, and one where the visualization is at.
+Then if the difference between the two is too great, then either skip ahead  or load more at once to keep up.
+
 https://www.mpg123.de/api/group__mpg123__input.shtml#ga072669ae9bde29eea8cffa4be10c7345
 https://mpg123.de/api/group__mpg123__seek.shtml // seeking pos i.e frames
 */
@@ -45,7 +45,7 @@ unsigned int current_song_id = 0;
 bool thread_running = false;
 unsigned int frame = 0; // current frame
 std::vector<Song> playlist_songs;
-
+std::vector<Playlist> playlists;
 #define FRAMES_PLAY_PER_READ 4 // This would create a delay when pressing stop,play ..., but lessens the load on cpu
 
 // for now this uses raylib
@@ -70,7 +70,6 @@ void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 	long unsigned int framesplayed = 0;
 	long unsigned int current_sec = 0;
 	unsigned int ao_ret = 0;
-
 	while (paused == false && mpg123_ret == MPG123_OK){
 		mpg123_ret = mpg123_read(mh, buf ,bytesperframe * FRAMES_PLAY_PER_READ, &done);
                 *frame_ref += FRAMES_PLAY_PER_READ;
@@ -161,12 +160,11 @@ void processCmd(unsigned int cmd){
                 }
                 initPlay((char*)playlist_songs[current_song_id].filepath.c_str());
         }
-	std::cout << "currently Playing: " << playlist_songs[current_song_id].songname << std::endl;
+//	std::cout << "currently Playing: " << playlist_songs[current_song_id].songname << std::endl;
 }
 
 int main(int argc, char *argv[])
 {
-//    SetTraceLogLevel(LOG_ERROR); // Disable annoying raylib error messages
     ao_initialize();
     driver = ao_default_driver_id();
     playlist_songs  = read_playlist_json("playlists/playlist.json");
