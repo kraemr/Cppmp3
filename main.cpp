@@ -18,32 +18,10 @@
 
 
 /*TODO:
-
-Playlists:
-They will look like this:
-{"Playlistname":[{name:"Songname",path:"absolutepath"},{...},{...}]}
-To determine Intensity create a sum of n values and divide trough 
-// https://www.matheretter.de/wiki/shazam-pulse-code-modulation
-Audio Playing / visualizing:
-
-For Audio Playing there will be a buffer of 16 minutes(4MB if 16bit and stereo) that will be filled by mp3 data
-This can be changed with settings for more or less buffering
-
-if you want to skip around in the song it will start filling the buffer from bytes at that location
-
-location can be found by using bytes_per_frame and ms per frame.
-Basically we calc the number of frames per second (frames * bytes_per_frame)
-first second (8 bit mono) --> start 0  end 24 * 1152
-second second --> start 24*1152  end  24 * 1152 * 2
-
 Ok so the simplest way to visualize audio would be to just run a second program/thread, that reads from the alsa device and displays the currently played audio
 This has the side effect of also visualizing audio, that does not come from the music player ..., but that should be fine for now.
-
-
 https://www.mpg123.de/api/group__mpg123__input.shtml#ga072669ae9bde29eea8cffa4be10c7345
 https://mpg123.de/api/group__mpg123__seek.shtml // seeking pos i.e frames
-Instead of loading all mp3 data to memory its possible to just skip around in the mp123 stream with mpg123_seek.
-However i would have to put ao_play in its own thread to be able to pause, skip ...
 */
 
 bool musicplayed= false;
