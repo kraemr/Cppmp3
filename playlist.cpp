@@ -16,33 +16,21 @@
 #include <iostream>
 #include "include/json.hpp"
 #include <vector>
+#include "include/playlist.hpp"
+
 using json = nlohmann::json;
-
-struct Song {
-	std::string songname;
-	std::string filepath;
-};
-
-
 std::vector<Song> read_playlist_json(std::string filepath){
 	std::vector<Song> playlist;
 	std::ifstream f(filepath);
 	json data = json::parse(f);
 	for (json::iterator it = data.begin(); it != data.end(); ++it) {
-	struct Song song;
-	try{
+		struct Song song;
 		song.songname = (*it)["songname"];
-		song.filepath = (*it)["filepath"];
+		song.filepath = (*it)["path"];
+//		std::cout << *el << std::endl;
 		playlist.push_back(song);
-	}
-	catch(){
-		return playlist;
-	}
 	}
 	return playlist;
 }
 
-int main(){
-auto t = read_playlist_json("playlist.json");
-}
 

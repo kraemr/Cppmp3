@@ -4,6 +4,7 @@
 #include <vector>
 #include "include/raylib.h"
 #include "include/DFT.hpp"
+#include "include/playlist.hpp"
 #include <iostream>
 #include <cmath> // implement round() later to avoid deps
 #include <thread>
@@ -152,33 +153,44 @@ int main(int argc, char *argv[])
 {
     SetTraceLogLevel(LOG_ERROR); // Disable annoying raylib error messages
     if(argc < 2) exit(0);
+    std::vector<Song> playlist_songs  = read_playlist_json("playlists/playlist.json");
     ao_initialize();
     driver = ao_default_driver_id();
-    initPlay(argv[1]);
+    initPlay((char*)playlist_songs[0].filepath.c_str());
     dev = ao_open_live(driver, &format, NULL);
     mpg_print_fmt();
     bool exit = false;
     unsigned int frame = 0; // current frame
     unsigned int cmd = 0;
+    unsigned int current_song_id = 0;
     paused = true;
     bool thread_running = false;
     std::thread t1;
-
     while(!exit){
 	std::cin >> cmd;
-	if(cmd == 0){
+	if(cmd == 0){	    // start current song
 		paused = false;
 		t1 = std::thread(resume_play_at_frame,frame,&frame);
 		thread_running = true;
-	}else if(cmd == 1){
+		initPlay((char*)playlist_songs[current_song_id].filepath.c_str());
+	}else if(cmd == 1){ // pause current song
 		paused = true;
 		t1.join();
 		thread_running = false;
-	}else if(cmd == 2){ // load new mp3 file
-		char path[256]={0};
-		std::cout << "Enter The Path for the mp3 file: ";
-		std::cin >> path;
-		initPlay(path);
+	}else if(cmd == 2){ // load next mp3 in playlist
+		if (current_song_id >= playlist_songs.size() - 1){
+			current_song_id = 0;
+		}else{
+	                current_song_id++;
+		}
+		initPlay((char*)playlist_songs[current_song_id].filepath.c_str());
+	}else if(cmd == 3){ // load prev mp3 in playlist
+		if(current_song_id == 0){
+			current_song_id = playlist_songs.size() - 1; // go to last song if on first song and skip back
+		}else {
+	                current_song_id--;
+		}
+                initPlay((char*)playlist_songs[current_song_id].filepath.c_str());
 	}
     }
    cleanup();
