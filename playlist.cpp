@@ -17,6 +17,8 @@
 #include "include/json.hpp"
 #include <vector>
 #include "include/playlist.hpp"
+#include <algorithm>
+#include <random>
 
 using json = nlohmann::json;
 std::vector<Song> read_playlist_json(std::string filepath){
@@ -27,10 +29,19 @@ std::vector<Song> read_playlist_json(std::string filepath){
 		struct Song song;
 		song.songname = (*it)["songname"];
 		song.filepath = (*it)["path"];
-//		std::cout << *el << std::endl;
 		playlist.push_back(song);
 	}
 	return playlist;
 }
+
+
+
+// This shuffles the songs in-mem
+void shuffle_playlist(std::vector<Song>& songs){
+	std::random_device rd;
+	std::default_random_engine rng(rd());
+	std::shuffle(songs.begin(), songs.end(), rng);
+}
+
 
 
