@@ -5,6 +5,7 @@
 #include "include/raylib.h"
 #include "include/DFT.hpp"
 #include "include/playlist.hpp"
+#include "include/stdafx.hpp"
 #include <iostream>
 #include <cmath> // implement round() later to avoid deps
 #include <thread>
@@ -42,6 +43,7 @@ long long unsigned int bytesread = 0;
 bool paused=false;
 std::thread t1;
 unsigned int current_song_id = 0;
+unsigned int current_playlist_id = 0;
 bool thread_running = false;
 unsigned int frame = 0; // current frame
 std::vector<Song> playlist_songs;
@@ -135,7 +137,7 @@ void processCmd(unsigned int cmd){
         if(cmd == 0){       // start current song
 		if(thread_running == false){
                 	paused = false;
-	                initPlay((char*)playlist_songs[current_song_id].filepath.c_str());
+	                initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
 			t1 = std::thread(resume_play_at_frame,frame,&frame);
 			thread_running = true;
 		}
@@ -146,20 +148,24 @@ void processCmd(unsigned int cmd){
                 	thread_running = false;
 		}
         }else if(cmd == 2){ // load next mp3 in playlist
-                if (current_song_id >= playlist_songs.size() - 1){
+                if (current_song_id >= playlists[current_playlist_id].songs.size() - 1){
                         current_song_id = 0;
                 }else{
                         current_song_id++;
                 }
-                initPlay((char*)playlist_songs[current_song_id].filepath.c_str());
+                initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
         }else if(cmd == 3){ // load prev mp3 in playlist
                 if(current_song_id == 0){
                         current_song_id = playlist_songs.size() - 1; // go to last song if on first song and skip back
                 }else {
                         current_song_id--;
                 }
-                initPlay((char*)playlist_songs[current_song_id].filepath.c_str());
-        }
+                initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
+        }else if(cmd == 4){
+	        playlists =  read_playlists_dir("playlists/");
+	}else if(cmd == 5){
+		
+	}
 //	std::cout << "currently Playing: " << playlist_songs[current_song_id].songname << std::endl;
 }
 
@@ -167,16 +173,18 @@ int main(int argc, char *argv[])
 {
     ao_initialize();
     driver = ao_default_driver_id();
-    playlist_songs  = read_playlist_json("playlists/playlist.json");
-    initPlay((char*)playlist_songs[0].filepath.c_str());
+    playlists =  read_playlists_dir("playlists/");
+    initPlay((char*)playlists[0].songs[0].filepath.c_str());
     dev = ao_open_live(driver, &format, NULL);
     bool exit = false;
     unsigned int cmd = 0;
     paused = true;
+  
     while(!exit){
-	std::cout << "Enter cmd: " << std::endl;
+	std::cout  << STDAFX_RED << "Enter cmd: " << STDAFX_RESET_COLOR << std::endl;
 	std::cin >> cmd;
 	processCmd(cmd);
+//                playlists =  read_playlists_dir("playlists/");
    }
    cleanup();
    return 0;

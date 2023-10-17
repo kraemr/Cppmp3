@@ -3,6 +3,7 @@
 #include "include/json.hpp"
 #include <vector>
 #include "include/playlist.hpp"
+#include "include/stdafx.hpp"
 #include <algorithm>
 #include <random>
 #include <sys/stat.h>
@@ -28,15 +29,35 @@ void merge_playlists(std::vector<Playlist>& playlist1,std::vector<Playlist> play
 
 }
 
+void print_songs(){
+
+}
+
+
 std::vector<Playlist> read_playlists_dir(std::string path){
 	struct stat sb;
+	const std::string split = ".json";
+	std::vector<Playlist> playlists; 
 	for(const auto& entry : fs::directory_iterator(path)){
 		std::filesystem::path filename = entry.path();
 		std::string filename_str = filename.string();
 		unsigned int stringlen = filename_str.length();
 		const char * path = filename_str.c_str();
-		if (stat(path, &sb) == 0 && !(sb.st_mode & S_IFDIR))std ::cout << path << std::endl;
+		if (stat(path, &sb) == 0 && !(sb.st_mode & S_IFDIR)){
+			Playlist playlist;
+//			#ifdef DEBUG
+//			#endif
+			playlist.name  = filename;
+			playlist.songs = read_playlist_json(filename_str);
+			playlists.push_back(playlist);
+			std::cout << STDAFX_YELLOW << path << STDAFX_RESET_COLOR  << std::endl;
+                        for(auto element : playlist.songs){
+				std::cout << STDAFX_GREEN << element.songname << STDAFX_RESET_COLOR << std::endl;
+				std::cout << element.filepath << std::endl;
+			}
+		}
 	}
+	return playlists;
 }
 
 // This shuffles the songs in-mem

@@ -10,4 +10,5 @@ struct Playlist {
 };
 
 std::vector<Song> read_playlist_json(std::string filepath);
-void shuffle_playlist(std::vector<Song>& songs); 
+void shuffle_playlist(std::vector<Song>& songs);
+std::vector<Playlist> read_playlists_dir(std::string path);
