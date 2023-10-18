@@ -22,6 +22,16 @@ Then if the difference between the two is too great, then either skip ahead  or 
 
 https://www.mpg123.de/api/group__mpg123__input.shtml#ga072669ae9bde29eea8cffa4be10c7345
 https://mpg123.de/api/group__mpg123__seek.shtml // seeking pos i.e frames
+
+add the add song to playlist functionality
+add the add remove from playlist functionality
+remove playlist functionality:
+just removes the given file
+
+add playlist functionality:
+
+
+
 */
 
 bool musicplayed= false;

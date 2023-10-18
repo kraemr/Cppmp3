@@ -67,6 +67,7 @@ std::vector<Playlist> read_playlists_dir(std::string path){
 			if(playlist.name == "__ERROR_JSON"){
 				continue; // found and read playlist, but it isnt valid
 			}
+			playlist.path = filename_str;
 			playlists.push_back(playlist);
 			std::cout << STDAFX_YELLOW << path << STDAFX_RESET_COLOR  << std::endl;
                         for(auto element : playlist.songs){

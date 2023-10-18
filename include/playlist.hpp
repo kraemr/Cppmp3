@@ -6,6 +6,7 @@ struct Song {
 
 struct Playlist {
 	std::string name; // name of playlist (is used to identify --> must be unique)
+	std::string path;
 	std::vector<Song> songs;
 	bool shuffled;
 };
