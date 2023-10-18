@@ -57,9 +57,6 @@ void init_shader_vis(int width,int height){
     SetTargetFPS(30);               // Set our game to run at 60 frames-per-second
 }
 
-
-
-
 // make this function somehow return that it has finished playing
 void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 	#ifdef DEBUG
@@ -156,15 +153,16 @@ void processCmd(unsigned int cmd){
                 initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
         }else if(cmd == 3){ // load prev mp3 in playlist
                 if(current_song_id == 0){
-                        current_song_id = playlist_songs.size() - 1; // go to last song if on first song and skip back
+                        current_song_id = playlists[current_playlist_id].songs.size() - 1; // go to last song if on first song and skip back
                 }else {
                         current_song_id--;
                 }
                 initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
-        }else if(cmd == 4){
+        }else if(cmd == 4){ // re read playlists and
 	        playlists =  read_playlists_dir("playlists/");
 	}else if(cmd == 5){
-		
+		shuffle_playlist(playlists[current_playlist_id].songs);
+		playlists[current_playlist_id].shuffled = true;
 	}
 //	std::cout << "currently Playing: " << playlist_songs[current_song_id].songname << std::endl;
 }
@@ -179,12 +177,10 @@ int main(int argc, char *argv[])
     bool exit = false;
     unsigned int cmd = 0;
     paused = true;
-  
     while(!exit){
 	std::cout  << STDAFX_RED << "Enter cmd: " << STDAFX_RESET_COLOR << std::endl;
 	std::cin >> cmd;
 	processCmd(cmd);
-//                playlists =  read_playlists_dir("playlists/");
    }
    cleanup();
    return 0;

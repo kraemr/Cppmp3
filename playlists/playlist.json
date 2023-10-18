@@ -1,4 +1,6 @@
-[
+{
+"name":"playlist",
+"songs":[
 	{
 		"songname":"science-documentary",
 		"path":"TestMp3s/science-documentary.mp3"
@@ -11,4 +13,6 @@
 		"songname":"titanium",
 		"path":"TestMp3s/titanium.mp3"
 	}
-]
+	]
+
+}
