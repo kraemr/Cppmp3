@@ -27,11 +27,13 @@ add the add song to playlist functionality
 add the add remove from playlist functionality
 remove playlist functionality:
 just removes the given file
-
 add playlist functionality:
 
-
-
+add always shuffle to playlist
+playlist merge
+most played sqlite
+add genre and cutom stuff to songs
+sound up/down
 */
 
 bool musicplayed= false;
@@ -56,8 +58,10 @@ unsigned int current_song_id = 0;
 unsigned int current_playlist_id = 0;
 bool thread_running = false;
 unsigned int frame = 0; // current frame
+
 std::vector<Song> playlist_songs;
 std::vector<Playlist> playlists;
+
 #define FRAMES_PLAY_PER_READ 4 // This would create a delay when pressing stop,play ..., but lessens the load on cpu
 
 // for now this uses raylib
@@ -173,6 +177,7 @@ void processCmd(unsigned int cmd){
 	}else if(cmd == 5){
 		shuffle_playlist(playlists[current_playlist_id].songs);
 		playlists[current_playlist_id].shuffled = true;
+	}else if(cmd == 6){
 	}
 //	std::cout << "currently Playing: " << playlist_songs[current_song_id].songname << std::endl;
 }
