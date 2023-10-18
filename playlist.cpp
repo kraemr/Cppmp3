@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <random>
 #include <sys/stat.h>
+#include <mpg123.h>
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -42,6 +43,11 @@ Playlist read_playlist_json(std::string filepath){
 		return playlist;
     	}
 }
+
+
+void get_song_duration(){
+}
+
 
 // Use this if you load playlists from different locations
 void merge_playlists(std::vector<Playlist>& playlist1,std::vector<Playlist> playlist2){

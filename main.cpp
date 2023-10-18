@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath> // implement round() later to avoid deps
 #include <thread>
+
 #define GLSL_AUDIO_START 0
 #define GLSL_AUDIO_STOP 1
 #define GLSL_AUDIO_NEXT_SONG 2
@@ -57,10 +58,14 @@ std::thread t1;
 unsigned int current_song_id = 0;
 unsigned int current_playlist_id = 0;
 bool thread_running = false;
-unsigned int frame = 0; // current frame
+unsigned int g_frame = 0; // current frame
 
 std::vector<Song> playlist_songs;
 std::vector<Playlist> playlists;
+
+
+
+void initPlay(char * abspath);
 
 #define FRAMES_PLAY_PER_READ 4 // This would create a delay when pressing stop,play ..., but lessens the load on cpu
 
@@ -77,7 +82,7 @@ void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 		std::cout << "Buffer Size for Playing Audio: " << bytesperframe * FRAMES_PLAY_PER_READ << std::endl;
 	#endif
 	unsigned char buf[bytesperframe * FRAMES_PLAY_PER_READ]={0};
-        mpg123_seek_frame(mh,frame,SEEK_SET); // Its not 100% accurate a second here is like 1008 ms instead of 1000 but thats fine ... i think
+    mpg123_seek_frame(mh,frame,SEEK_SET); // Its not 100% accurate a second here is like 1008 ms instead of 1000 but thats fine ... i think
 	unsigned int mpg123_ret = MPG123_OK;
 	long unsigned int done = 0;
 	long unsigned int framesplayed = 0;
@@ -85,7 +90,7 @@ void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 	unsigned int ao_ret = 0;
 	while (paused == false && mpg123_ret == MPG123_OK){
 		mpg123_ret = mpg123_read(mh, buf ,bytesperframe * FRAMES_PLAY_PER_READ, &done);
-                *frame_ref += FRAMES_PLAY_PER_READ;
+        (*frame_ref) += FRAMES_PLAY_PER_READ;
 		ao_ret = ao_play(dev,(char*)buf,bytesperframe * FRAMES_PLAY_PER_READ);
 		framesplayed += FRAMES_PLAY_PER_READ;
 		#ifdef DEBUG
@@ -93,6 +98,14 @@ void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 			std::cout << "ao_ret: " << ao_ret << std::endl;
 			std::cout << "done: " << done << std::endl;
 		#endif
+	}
+	if( !(current_song_id >= playlists[current_playlist_id].songs.size() - 1)){
+	current_song_id++;
+	initPlay(	(char*)playlists[current_playlist_id].songs[current_song_id+1].filepath.c_str());
+	g_frame = 0;
+	resume_play_at_frame(0,&g_frame);
+	}else{
+		return;
 	}
 }
 
@@ -117,13 +130,13 @@ void initPlay(char * abspath){
 	mpg123_open(mh, abspath);
 	mpg123_getformat(mh, &rate, &channels, &encoding);
 	format.bits = mpg123_encsize(encoding) * BITS;
-        format.rate = rate;
-        format.channels = channels;
-        format.byte_format = AO_FMT_NATIVE;
-        format.matrix = 0;
-        bytesperframe = (format.bits/8 * channels * 1152);
-    	rawfps =  1000.0 / double(get_frame_duration_ms_MP3(format.rate));
-        fps = ceil(rawfps);
+    format.rate = rate;
+    format.channels = channels;
+    format.byte_format = AO_FMT_NATIVE;
+    format.matrix = 0;
+    bytesperframe = (format.bits/8 * channels * 1152);
+    //rawfps =  1000.0 / double(get_frame_duration_ms_MP3(format.rate));
+    //fps = ceil(rawfps);
         #ifdef DEBUG
 	std::cout << "Error: " << err << std::endl;
 	std::cout << "Buffer Size: " << buffer_size << std::endl;
@@ -149,8 +162,9 @@ void processCmd(unsigned int cmd){
 		if(thread_running == false){
                 	paused = false;
 	                initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
-			t1 = std::thread(resume_play_at_frame,frame,&frame);
-			thread_running = true;
+					g_frame = 0;
+					t1 = std::thread(resume_play_at_frame,g_frame,&g_frame);
+					thread_running = true;
 		}
         }else if(cmd == 1){ // pause current song
 		if(thread_running == true){
@@ -164,6 +178,7 @@ void processCmd(unsigned int cmd){
                 }else{
                         current_song_id++;
                 }
+				g_frame = 0;
                 initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
         }else if(cmd == 3){ // load prev mp3 in playlist
                 if(current_song_id == 0){
@@ -171,12 +186,18 @@ void processCmd(unsigned int cmd){
                 }else {
                         current_song_id--;
                 }
+				g_frame = 0;
                 initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
         }else if(cmd == 4){ // re read playlists and
 	        playlists =  read_playlists_dir("playlists/");
 	}else if(cmd == 5){
 		shuffle_playlist(playlists[current_playlist_id].songs);
 		playlists[current_playlist_id].shuffled = true;
+		for(auto elem : playlists[current_playlist_id].songs){
+			std::cout << elem.songname << std::endl;
+		}
+		g_frame = 0;
+        initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
 	}else if(cmd == 6){
 	}
 //	std::cout << "currently Playing: " << playlist_songs[current_song_id].songname << std::endl;
@@ -193,10 +214,10 @@ int main(int argc, char *argv[])
     unsigned int cmd = 0;
     paused = true;
     while(!exit){
-	std::cout  << STDAFX_RED << "Enter cmd: " << STDAFX_RESET_COLOR << std::endl;
-	std::cin >> cmd;
-	processCmd(cmd);
-   }
+		std::cout  << STDAFX_RED << "Enter cmd: " << STDAFX_RESET_COLOR << std::endl;
+		std::cin >> cmd;
+		processCmd(cmd);
+    }
    cleanup();
    return 0;
 }
