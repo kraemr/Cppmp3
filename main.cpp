@@ -7,7 +7,6 @@
 #include "include/playlist.hpp"
 #include "include/stdafx.hpp"
 #include <iostream>
-#include <cmath> // implement round() later to avoid deps
 #include <thread>
 
 #define GLSL_AUDIO_START 0
@@ -40,7 +39,6 @@ sound up/down
 bool musicplayed= false;
 bool g_samplebuffer_alloced = false;
 mpg123_handle * mh;
-//size_t done;
 int err;
 int driver;
 size_t buffer_size;
@@ -59,15 +57,13 @@ unsigned int current_song_id = 0;
 unsigned int current_playlist_id = 0;
 bool thread_running = false;
 unsigned int g_frame = 0; // current frame
-
 std::vector<Song> playlist_songs;
 std::vector<Playlist> playlists;
-
+bool g_mpg_was_init=false;
 
 
 void initPlay(char * abspath);
-
-#define FRAMES_PLAY_PER_READ 4 // This would create a delay when pressing stop,play ..., but lessens the load on cpu
+#define FRAMES_PLAY_PER_READ 16 // This would create a delay when pressing stop,play ..., but lessens the load on cpu
 
 // for now this uses raylib
 // Also this will handle all the ui
@@ -82,15 +78,14 @@ void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 		std::cout << "Buffer Size for Playing Audio: " << bytesperframe * FRAMES_PLAY_PER_READ << std::endl;
 	#endif
 	unsigned char buf[bytesperframe * FRAMES_PLAY_PER_READ]={0};
-    mpg123_seek_frame(mh,frame,SEEK_SET); // Its not 100% accurate a second here is like 1008 ms instead of 1000 but thats fine ... i think
+        mpg123_seek_frame(mh,frame,SEEK_SET); // Its not 100% accurate a second here is like 1008 ms instead of 1000 but thats fine ... i think
 	unsigned int mpg123_ret = MPG123_OK;
 	long unsigned int done = 0;
 	long unsigned int framesplayed = 0;
-	long unsigned int current_sec = 0;
 	unsigned int ao_ret = 0;
 	while (paused == false && mpg123_ret == MPG123_OK){
 		mpg123_ret = mpg123_read(mh, buf ,bytesperframe * FRAMES_PLAY_PER_READ, &done);
-        (*frame_ref) += FRAMES_PLAY_PER_READ;
+	        (*frame_ref) += FRAMES_PLAY_PER_READ;
 		ao_ret = ao_play(dev,(char*)buf,bytesperframe * FRAMES_PLAY_PER_READ);
 		framesplayed += FRAMES_PLAY_PER_READ;
 		#ifdef DEBUG
@@ -100,10 +95,10 @@ void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 		#endif
 	}
 	if( !(current_song_id >= playlists[current_playlist_id].songs.size() - 1)){
-	current_song_id++;
-	initPlay(	(char*)playlists[current_playlist_id].songs[current_song_id+1].filepath.c_str());
-	g_frame = 0;
-	resume_play_at_frame(0,&g_frame);
+		current_song_id++;
+		initPlay((char*)playlists[current_playlist_id].songs[current_song_id+1].filepath.c_str());
+		g_frame = 0;
+		resume_play_at_frame(0,&g_frame);
 	}else{
 		return;
 	}
@@ -124,17 +119,22 @@ double milli_secs(double millisec){
 }
 
 void initPlay(char * abspath){
-	mpg123_init();
+	if(g_mpg_was_init){
+	        mpg123_close(mh);
+	        mpg123_delete(mh);
+	}else{
+		g_mpg_was_init = true;
+	}
 	mh = mpg123_new(NULL, &err);
 	buffer_size = mpg123_outblock(mh);
 	mpg123_open(mh, abspath);
 	mpg123_getformat(mh, &rate, &channels, &encoding);
 	format.bits = mpg123_encsize(encoding) * BITS;
-    format.rate = rate;
-    format.channels = channels;
-    format.byte_format = AO_FMT_NATIVE;
-    format.matrix = 0;
-    bytesperframe = (format.bits/8 * channels * 1152);
+        format.rate = rate;
+    	format.channels = channels;
+    	format.byte_format = AO_FMT_NATIVE;
+    	format.matrix = 0;
+    	bytesperframe = (format.bits/8 * channels * 1152);
     //rawfps =  1000.0 / double(get_frame_duration_ms_MP3(format.rate));
     //fps = ceil(rawfps);
         #ifdef DEBUG
@@ -199,6 +199,8 @@ void processCmd(unsigned int cmd){
 		g_frame = 0;
         initPlay((char*)playlists[current_playlist_id].songs[current_song_id].filepath.c_str());
 	}else if(cmd == 6){
+		cleanup();
+		exit(0);
 	}
 //	std::cout << "currently Playing: " << playlist_songs[current_song_id].songname << std::endl;
 }

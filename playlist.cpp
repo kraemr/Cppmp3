@@ -8,13 +8,8 @@
 #include <random>
 #include <sys/stat.h>
 #include <mpg123.h>
-
 using json = nlohmann::json;
 namespace fs = std::filesystem;
-
-// adapt the parsing to the new format of the json in playlists/playlist.json
-// let read_playlist_json return a Playlist struct instead of a list of songs
-
 
 Playlist read_playlist_json(std::string filepath){
 	try{
@@ -45,8 +40,6 @@ Playlist read_playlist_json(std::string filepath){
 }
 
 
-void get_song_duration(){
-}
 
 
 // Use this if you load playlists from different locations
@@ -54,7 +47,16 @@ void merge_playlists(std::vector<Playlist>& playlist1,std::vector<Playlist> play
 
 }
 
-void print_songs(){
+void print_songs(Playlist& playlist){
+	/*std::cout << STDAFX_YELLOW << playlist->name << ": " << std::endl;
+	for (struct Song song : playlist->songs){
+		std::cout << "songname: " << song.songname << "filepath: " << song.filepath << std::endl;
+	}
+	std::cout << STDAFX_RESET_COLOR <<std::endl;*/
+}
+
+unsigned int get_song_duration(Song song){
+	
 
 }
 
