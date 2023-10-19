@@ -1,5 +1,5 @@
 # glsl-Audio
-uses glsl shaders for audio visualization
+uses glsl shaders for audio visualization and has  a builtin mp3-player, with playlists and all the things you would expect.
 
 
 
