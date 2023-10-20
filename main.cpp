@@ -94,7 +94,7 @@ void resume_play_at_frame(unsigned int frame,unsigned int* frame_ref){
 			std::cout << "done: " << done << std::endl;
 		#endif
 	}
-	if( !(current_song_id >= playlists[current_playlist_id].songs.size() - 1)){
+	if( !(current_song_id >= playlists[current_playlist_id].songs.size() - 1) && paused == false){
 		current_song_id++;
 		initPlay((char*)playlists[current_playlist_id].songs[current_song_id+1].filepath.c_str());
 		g_frame = 0;
