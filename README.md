@@ -15,6 +15,7 @@ So This is not even close to finished.
 
 ## dependencies:
 libfftw3,libao,libmpg123
+
 ```bash
 sudo apt install libao-dev libfftw3-dev libmpg123-dev
 ```
