@@ -2,14 +2,6 @@
 "name":"playlist",
 "songs":[
 	{
-		"songname":"chime",
-		"path":"TestMp3s/chimes-7035.mp3"
-	},
-	{
-		"songname":"persona4",
-		"path":"TestMp3s/p4.mp3"
-	},
-	{
 		"songname":"science-documentary",
 		"path":"TestMp3s/science-documentary.mp3"
 	},
