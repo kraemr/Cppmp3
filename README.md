@@ -12,3 +12,9 @@ rmi
 ## The Current State
 Currently im mostly working on getting the mp3 player working properly with low cpu-usage, for that ill have to use a different library as libao is pretty outdated.
 So This is not even close to finished.
+
+## dependencies:
+libfftw3,libao,libmpg123
+```bash
+sudo apt install libao-dev libfftw3-dev libmpg123-dev
+```
