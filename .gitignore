@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
-
+TestMp3s/
+playlists/
 # Object files
 *.o
 *.ko
