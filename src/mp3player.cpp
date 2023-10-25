@@ -15,6 +15,7 @@ bool playOnLoad=true;
 bool isInitialized=false;
 bool playlistLoaded=false;
 i32 playStatus=STOPPED; 
+i32 currentSongId=0;
 std::vector<Playlist> playlistsVec;
 Playlist* currentPlaylist;
 
@@ -67,7 +68,18 @@ i32 playSongAtIndex(i32 i){
 
 // use this in a thread
 void processSignals(){
-    
+    while(1){
+    if(ma_sound_at_end(&sound)){
+        currentSongId++;        // Autoplay next Song
+        if(currentPlaylist != nullptr && currentSongId < currentPlaylist->songs.size()){
+            playSongAtIndex(currentSongId);
+        }
+        else if(currentPlaylist != nullptr && currentSongId+1 >= currentPlaylist->songs.size()){
+            currentSongId = 0;
+            playSongAtIndex(currentSongId);
+        }
+    }
+    }
 }
 
 // searches Song By its name attribute
