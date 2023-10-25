@@ -1,12 +1,16 @@
+# Cppmp3
 Split up visualization,mp3player and gui completely
-
+</br>
 For Audio Playing/Decoding: https://github.com/mackron/miniaudio
+</br>
 For Visualization: raylib/Opengl
+</br>
 For Playlists: nlohmannJson
+</br>
 For fft: fftw3
 
 
-
+## How a playlist looks like:
 ```json
 {
 "name":"PLAYLIST_NAME",
