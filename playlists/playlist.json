@@ -1,0 +1,15 @@
+{
+"name":"Playlist-Name",
+"dir":"ABSOLUTE_PATH_TO_THE_FOLDER",
+"songs":[
+{
+    "songname":"baby-mandala",
+    "path":"../TestAudio/baby-mandala-169039.mp3"
+},
+{
+    "songname":"drive-breakout",
+    "path":"../TestAudio/drive-breakbeat-173062.mp3"
+}
+]
+
+}
