@@ -22,6 +22,10 @@ int main(int argc, char** argv)
     while(1){
         std::cin >> Mp3Player::signal;
         Mp3Player::recvdSignal = true;
+        if(Mp3Player::signal == 7){
+            signalThread.join();
+            break;
+        }
     }
     return 0;
 }

@@ -132,6 +132,9 @@ void processSignals(){
     case 7:
     exit = true;
     ;break; // Exit Thread
+    default:
+    //Do nothing
+    ;break;
     } // end of switch
     recvdSignal = false; // Always reset to 0 at end of loop
  //   lock.lock();
