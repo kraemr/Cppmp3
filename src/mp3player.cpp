@@ -2,22 +2,24 @@
 #include "../include/playlist.hpp"
 #include "../include/mp3player.hpp"
 #include "../include/stdafx.hpp"
-#include <cstddef>
+
 namespace Mp3Player
 {
-#define STOPPED 0
-#define PLAYING 1
-
 ma_result result;
 ma_engine engine;
 ma_sound sound;
-bool playOnLoad=true;
-bool isInitialized=false;
-bool playlistLoaded=false;
-i32 playStatus=STOPPED; 
+volatile bool playOnLoad=true;
+volatile bool isInitialized=false;
+volatile bool playlistLoaded=false;
+volatile bool recvdSignal=false;
+//i32 playStatus=STOPPED;
 i32 currentSongId=0;
+i32 signal=0;
 std::vector<Playlist> playlistsVec;
-Playlist* currentPlaylist;
+Playlist* currentPlaylist=nullptr;
+std::mutex mtx;
+std::condition_variable cv;
+std::lock_guard<std::mutex> lock(mtx);// Give the Mp3Player its own Thread
 
 i32 initMp3Player(){
     result = (ma_result)ma_engine_init(NULL, &engine);
@@ -68,17 +70,51 @@ i32 playSongAtIndex(i32 i){
 
 // use this in a thread
 void processSignals(){
+    i32 res=0;
     while(1){
+    cv.wait(lock, [] { return recvdSignal; });
     if(ma_sound_at_end(&sound)){
         currentSongId++;        // Autoplay next Song
         if(currentPlaylist != nullptr && currentSongId < currentPlaylist->songs.size()){
-            playSongAtIndex(currentSongId);
+            res = (i32)playSongAtIndex(currentSongId);
         }
-        else if(currentPlaylist != nullptr && currentSongId+1 >= currentPlaylist->songs.size()){
+        else if(currentPlaylist != nullptr && currentSongId >= currentPlaylist->songs.size()){
             currentSongId = 0;
-            playSongAtIndex(currentSongId);
+            res = (i32)playSongAtIndex(currentSongId);
         }
     }
+    switch (signal) {
+    case 0: result = ma_sound_stop(&sound);break; // 0 Stop
+    case 1: result = ma_sound_start(&sound);break;
+    case 2: 
+        currentSongId++;        // Autoplay next Song
+        if(currentPlaylist != nullptr && currentSongId < currentPlaylist->songs.size()){
+            res = (i32)playSongAtIndex(currentSongId);
+        }
+        else if(currentPlaylist != nullptr && currentSongId >= currentPlaylist->songs.size()){
+            currentSongId = 0;
+            res = (i32)playSongAtIndex(currentSongId);
+        }
+    ;break; // skip song
+    case 3:
+        currentSongId--;
+        if(currentPlaylist != nullptr && currentSongId < 0){
+            res = (i32)playSongAtIndex(currentSongId);
+        }
+        else if(currentPlaylist != nullptr && currentSongId < 0){
+            currentSongId = currentPlaylist->songs.size() - 1;
+            res = (i32)playSongAtIndex(currentSongId);
+        }
+    ;break; // prev song
+    case 4: 
+    /*Shuffle the songs list in the current playlist and set shuffled = true in the playlist Struct*/
+    ;break; // Shuffle
+    case 5:
+    // Go to nth frame (User has selected a second to resume play from)
+    ;break;
+    } // end of switch
+
+  
     }
 }
 
@@ -92,7 +128,7 @@ Song findSongByName(){
 // Later enable loading playlists from multiple directories/filepaths
 void loadPlaylistsDir(const std::string filepath){
     playlistsVec = read_playlists_dir(filepath);
-    if(playlistsVec.size() == 0){
+   if(playlistsVec.size() == 0){
         return;
     }
     currentPlaylist = &playlistsVec[0]; 
