@@ -10,8 +10,9 @@ void cleanupMp3Player();
 void loadPlaylistsDir(const std::string filepath);
 int playSongAtIndex(int i);
 void processSignals();
+extern std::atomic<bool> recvdSignal;
 extern std::mutex mtx;
 extern std::condition_variable cv;
-extern std::lock_guard<std::mutex> lock;
+extern std::unique_lock<std::mutex> lock;
 extern int signal;
 }

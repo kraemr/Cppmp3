@@ -2,7 +2,7 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++20 -Wall -fsanitize=address -lm
+CXXFLAGS = -std=c++20 -lm -O2
 
 # Source directory
 SRC_DIR = ../src
