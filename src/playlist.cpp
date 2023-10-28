@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include "../include/json.hpp"
@@ -117,10 +118,14 @@ std::vector<Playlist> read_playlists_dir(std::string path){
 }
 
 // This shuffles the songs in-mem
-void shuffle_playlist(std::vector<Song>& songs){
+void shuffle_playlist(Playlist* playlist){
+	if(playlist == nullptr || playlist == NULL){
+		return;
+	}
 	std::random_device rd;
 	std::default_random_engine rng(rd());
-	std::shuffle(songs.begin(), songs.end(), rng);
+	playlist->shuffled = true;
+	std::shuffle(playlist->songs.begin(), playlist->songs.end(), rng);
 }
 
 
