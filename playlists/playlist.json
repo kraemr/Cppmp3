@@ -1,6 +1,6 @@
 {
 "name":"Playlist-Name",
-"dir":"ABSOLUTE_PATH_TO_THE_FOLDER",
+"path":"lol",
 "songs":[
 {
     "songname":"baby-mandala",

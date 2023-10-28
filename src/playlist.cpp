@@ -23,7 +23,8 @@ Playlist read_playlist_json(std::string filepath){
 			playlist_songs.push_back(song);
 		}
 		playlist.name = data["name"];
-	        playlist.songs = playlist_songs;
+		playlist.path = filepath;
+	    playlist.songs = playlist_songs;
 		playlist.shuffled = false;
 	        return playlist;
 	}
@@ -36,6 +37,40 @@ Playlist read_playlist_json(std::string filepath){
 		playlist.name = "__ERROR_JSON";
 		return playlist;
     	}
+}
+
+// This creates a json_file with the same name as
+void save_changed_playlist(Playlist* playlist){ 
+	if(playlist == nullptr || playlist == NULL ){
+		return;
+	}
+	json data;
+	// Playlist p = read_playlist_json(playlist->path);
+	Playlist p = read_playlist_json(playlist->path);
+	if(p.name == "__ERROR_JSON"){
+		return;
+	}
+	data["name"] = p.name;
+	data["path"] = p.path;
+	std::cout << "orig Path" << p.path << std::endl;
+	json songsJsonArr;
+	for (const Song& song : p.songs){
+		json songJson;
+		songJson["songname"] = song.songname;
+		songJson["path"] = song.filepath;
+		songsJsonArr.push_back(songJson);
+	}
+    data["songs"] = songsJsonArr;
+    std::string jsonStr = data.dump();
+    std::ofstream outputFile("test.json");
+	if (outputFile.is_open()) {
+        outputFile << jsonStr;
+        outputFile.close();
+    } else {
+    }
+	
+
+
 }
 
 

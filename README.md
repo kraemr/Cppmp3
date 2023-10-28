@@ -1,38 +1,7 @@
-# Cppmp3
-Split up visualization,mp3player and gui completely
-</br>
-For Audio Playing/Decoding: https://github.com/mackron/miniaudio
-</br>
-For Visualization: raylib/Opengl
-</br>
-For Playlists: nlohmannJson
-</br>
-For fft: fftw3
+These files split the main library into separate .h and .c files. This is intended for those who prefer separate files
+or whose build environment better suits this configuration. The files here are generated from a tool based on the
+content in the main miniaudio.h file. Do not edit these files directly. If you want to contribute, please make the
+contribution in the main file.
 
-
-## How a playlist looks like:
-```json
-{
-"name":"PLAYLIST_NAME",
-"dir":"ABSOLUTE_PATH_TO_THE_FOLDER",
-"songs":[
-{
-    "songname":"NAME_OF_SONG",
-    "path":"FILENAME"
-},
-{
-    "songname":"science-documentary",
-    "path":"TestMp3s/science-documentary.mp3"
-},
-{
-    "songname":"once-in-paris",
-    "path":"TestMp3s/once-in-paris.mp3"
-},
-{
-    "songname":"titanium",
-    "path":"TestMp3s/titanium.mp3"
-}
-]
-
-}
-```
+This is not always up to date with the most recent commit in the dev branch, but will usually be up to date with the
+master branch.

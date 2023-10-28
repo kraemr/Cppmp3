@@ -1,5 +1,5 @@
 #include <iostream>
-#define MINIAUDIO_IMPLEMENTATION
+//#define MINIAUDIO_IMPLEMENTATION
 #include "../include/miniaudio.h"
 #include "../include/playlist.hpp"
 #include "../include/mp3player.hpp"
@@ -32,6 +32,7 @@ i32 initMp3Player(){
         printf("Failed to initialize audio engine.");
         return -1;
     }
+    std::cout << "init Mp3" << std::endl;
     isInitialized = true;
     return 0;
 }
@@ -124,6 +125,11 @@ void processSignals(){
         }
     ;break; // prev song
     case 5: 
+    if(currentPlaylist != nullptr){
+        save_changed_playlist(currentPlaylist);
+    }else{
+        std::cout << "ERROR currentPlaylist Pointer Was Null" << std::endl;
+    }
     /*Shuffle the songs list in the current playlist and set shuffled = true in the playlist Struct*/
     ;break; // Shuffle
     case 6:
