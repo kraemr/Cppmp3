@@ -45,8 +45,8 @@ void save_changed_playlist(Playlist* playlist){
 	if(playlist == nullptr || playlist == NULL ){
 		return;
 	}
+	try{
 	json data;
-	// Playlist p = read_playlist_json(playlist->path);
 	Playlist p = read_playlist_json(playlist->path);
 	if(p.name == "__ERROR_JSON"){
 		return;
@@ -63,12 +63,18 @@ void save_changed_playlist(Playlist* playlist){
 	}
     data["songs"] = songsJsonArr;
     std::string jsonStr = data.dump();
-    std::ofstream outputFile("test.json");
+    std::ofstream outputFile(playlist->path);
 	if (outputFile.is_open()) {
         outputFile << jsonStr;
         outputFile.close();
     } else {
+
     }
+	}
+	catch (const json::exception& e){
+		std::cout << "Error Saving Playlist "<< std::endl;
+		return;
+	}
 	
 
 
