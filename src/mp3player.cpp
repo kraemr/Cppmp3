@@ -1,11 +1,10 @@
 #include <iostream>
-//#define MINIAUDIO_IMPLEMENTATION
 #include "../include/miniaudio.h"
 #include "../include/playlist.hpp"
 #include "../include/mp3player.hpp"
 #include "../include/stdafx.hpp"
 #include <atomic>
-#include <mutex>
+#include <chrono>
 
 namespace Mp3Player
 {
@@ -20,6 +19,7 @@ volatile bool exit=false;
 //i32 playStatus=STOPPED;
 i32 currentSongId=0;
 i32 signal=0;
+i64 nano_delay = 10000000;
 std::vector<Playlist> playlistsVec;
 Playlist* currentPlaylist=nullptr;
 std::mutex mtx;
@@ -56,7 +56,6 @@ void cleanupMp3Player(){
     }
 }
 
-
 i32 playSongAtIndex(i32 i){
     if(currentPlaylist == nullptr){
         printf("Error No playlist loaded, but tried to play a song from it!!\n");
@@ -80,7 +79,6 @@ void sendSignal(unsigned int signal){
 
 // use this in a thread
 void processSignals(){
-   // lock = std::unique_lock(mtx);
     i32 res=0;
     initMp3Player();
     loadPlaylistsDir("../playlists");
@@ -88,7 +86,7 @@ void processSignals(){
     playSongAtIndex(currentSongId);
     playOnLoad = true;
     while(!exit){
-    //cv.wait(lock, []{ return recvdSignal; });
+    
     if(ma_sound_at_end(&sound)){
         currentSongId++;        // Autoplay next Song
         if(currentPlaylist != nullptr && currentSongId < currentPlaylist->songs.size()){
@@ -145,6 +143,10 @@ void processSignals(){
     recvdSignal = false; // Always reset to 0 at end of loop
  //   lock.lock();
     }
+    std::timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = nano_delay;
+    nanosleep(&ts, nullptr);
     }
     cleanupMp3Player();
 }

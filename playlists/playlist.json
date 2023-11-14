@@ -3,12 +3,12 @@
 "path":"lol",
 "songs":[
 {
-    "songname":"baby-mandala",
-    "path":"../TestAudio/baby-mandala-169039.mp3"
+    "songname":"beneath_the_mask",
+    "path":"/home/rob/Music/Beneath_the_Mask.mp3"
 },
 {
-    "songname":"drive-breakout",
-    "path":"../TestAudio/drive-breakbeat-173062.mp3"
+    "songname":"heartbeat_heartbreak",
+    "path":"/home/rob/Music/Persona4_Heartbeat_Heartbreak.mp3"
 }
 ]
 
