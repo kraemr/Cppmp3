@@ -2,8 +2,7 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++20 -lm -O2 -fsanitize=thread
-
+CXXFLAGS = -std=c++20 -lm -O2 -lraylib
 # Source directory
 SRC_DIR = ../src
 

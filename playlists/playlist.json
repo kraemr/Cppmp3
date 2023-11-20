@@ -1,15 +1,1 @@
-{
-"name":"Playlist-Name",
-"path":"lol",
-"songs":[
-{
-    "songname":"beneath_the_mask",
-    "path":"/home/rob/Music/Beneath_the_Mask.mp3"
-},
-{
-    "songname":"heartbeat_heartbreak",
-    "path":"/home/rob/Music/Persona4_Heartbeat_Heartbreak.mp3"
-}
-]
-
-}
+{"name":"Playlist-Name","path":"../playlists/playlist.json","songs":[{"path":"/home/rob/Music/Beneath_the_Mask.mp3","songname":"beneath_the_mask"},{"path":"/home/rob/Music/Persona4_Heartbeat_Heartbreak.mp3","songname":"heartbeat_heartbreak"}]}

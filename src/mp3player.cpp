@@ -1,11 +1,7 @@
 #include <iostream>
 #include "../include/miniaudio.h"
-#include "../include/playlist.hpp"
 #include "../include/mp3player.hpp"
 #include "../include/stdafx.hpp"
-#include <atomic>
-#include <chrono>
-
 namespace Mp3Player
 {
 ma_result result;
@@ -16,15 +12,12 @@ volatile bool isInitialized=false;
 volatile bool playlistLoaded=false;
 std::atomic <bool> recvdSignal=false;
 volatile bool exit=false;
-//i32 playStatus=STOPPED;
 i32 currentSongId=0;
 i32 signal=0;
 i64 nano_delay = 10000000;
+Song currentSong;
 std::vector<Playlist> playlistsVec;
 Playlist* currentPlaylist=nullptr;
-std::mutex mtx;
-std::condition_variable cv;
-std::unique_lock<std::mutex> lock;// Give the Mp3Player its own Thread
 
 i32 initMp3Player(){
     result = (ma_result)ma_engine_init(NULL, &engine);
@@ -64,6 +57,7 @@ i32 playSongAtIndex(i32 i){
     if(i >= currentPlaylist->songs.size()){
         return 1;
     }
+    currentSong = currentPlaylist->songs[i];
     i32 res = initPlaySound(currentPlaylist->songs[i].filepath);
     if(res == -1){
         printf("Failed to playSongAtIndex %d\n",i);
@@ -86,7 +80,6 @@ void processSignals(){
     playSongAtIndex(currentSongId);
     playOnLoad = true;
     while(!exit){
-    
     if(ma_sound_at_end(&sound)){
         currentSongId++;        // Autoplay next Song
         if(currentPlaylist != nullptr && currentSongId < currentPlaylist->songs.size()){
@@ -99,8 +92,12 @@ void processSignals(){
     }
     if(recvdSignal){
         switch (signal) {
-        case 1: result = ma_sound_stop(&sound);break; // 0 Stop
-        case 2: result = ma_sound_start(&sound);break;
+        case 1: 
+        result = ma_sound_stop(&sound);
+        break; // 0 Stop
+        case 2: 
+        result = ma_sound_start(&sound);
+        break;
         case 3: 
         currentSongId++;        // Autoplay next Song
         std::cout << "current:" << currentSongId << std::endl;
@@ -157,11 +154,10 @@ Song findSongByName(){
     Song song;
     return song;
 }
-
 // Later enable loading playlists from multiple directories/filepaths
 void loadPlaylistsDir(const std::string filepath){
     playlistsVec = read_playlists_dir(filepath);
-   if(playlistsVec.size() == 0){
+    if(playlistsVec.size() == 0){
         return;
     }
     currentPlaylist = &playlistsVec[0]; 

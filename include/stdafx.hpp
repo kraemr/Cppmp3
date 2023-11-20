@@ -1,6 +1,5 @@
 #include <vector>
 #include <string>
-
 #ifndef STDAFX_H
 #define STDAFX_H
 #define STDAFX_RESET_COLOR "\033[0m"
@@ -24,10 +23,8 @@ typedef unsigned long long u64;
 typedef unsigned int u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
-
 typedef long long int i64;
 typedef int i32;
 typedef short i16;
 typedef char i8;
-
 #endif

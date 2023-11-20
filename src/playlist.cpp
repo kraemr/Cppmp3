@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 using json = nlohmann::json;
 namespace fs = std::filesystem;
-
 Playlist read_playlist_json(std::string filepath){
 	try{
 	        std::vector<Song> playlist_songs;
@@ -79,9 +78,6 @@ void save_changed_playlist(Playlist* playlist){
 
 
 }
-
-
-
 
 // Use this if you load playlists from different locations
 void merge_playlists(std::vector<Playlist>& playlist1,std::vector<Playlist> playlist2){
