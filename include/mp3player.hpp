@@ -14,6 +14,9 @@ void cleanupMp3Player();
 void loadPlaylistsDir(const std::string filepath);
 int playSongAtIndex(int i);
 void processSignals();
+void setVolumePercent(float percent);
+float getVolumePercent();
+
 extern Song currentSong;
 extern std::atomic<bool> recvdSignal;
 extern std::mutex mtx;

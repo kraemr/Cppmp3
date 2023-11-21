@@ -1,0 +1,14 @@
+{
+    "playlist_dirs":[
+
+    ],
+    "music_dirs":[
+
+    ],
+    "nanodelay":10000000,
+    "fps":60,
+    "initial-screen-size-x":800,
+    "initial-screen-size-y":450,
+    "start-maximized":true,
+    "start-fullscreen":false
+}

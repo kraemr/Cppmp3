@@ -1,16 +1,56 @@
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <thread>
 #include "../include/stdafx.hpp"
 #include "../include/mp3player.hpp"
 #include "../include/raylib.h"
-
-
+#include "../include/raymath.h"
+bool paused=true;
+Rectangle prevButton = { 50, 400, 100, 40 };
+Rectangle pauseButton = { 200, 400, 100, 40 };
+Rectangle nextButton = { 350, 400, 100, 40 };
+Rectangle testButton = { 500, 400, 100, 40 };
 
 inline void send_signal(int sig){
     Mp3Player::signal =  sig;
     Mp3Player::recvdSignal = true;
 }
+
+
+void process_button_events(){
+  if (CheckCollisionPointRec(GetMousePosition(), prevButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+        {
+            send_signal(4);
+            printf("Previous Song\n");
+        }
+        if (CheckCollisionPointRec(GetMousePosition(), pauseButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+        {
+            Mp3Player::signal = paused ? 2 : 1;
+            Mp3Player::recvdSignal = true;
+            if(paused){
+                send_signal(2);
+                paused = false;
+            }
+            else {
+                send_signal(1);
+                paused = true;
+            }
+            printf("pause\n");
+        }
+        if (CheckCollisionPointRec(GetMousePosition(), nextButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+        {
+            send_signal(3);
+            printf("Next Song\n");
+        }
+        if (CheckCollisionPointRec(GetMousePosition(), testButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+        {
+            Mp3Player::setVolumePercent(50.0f);
+            printf("Set Volume to half\n");
+        }
+ 
+}
+
 
 int main(int argc, char** argv)
 {
@@ -35,54 +75,33 @@ int main(int argc, char** argv)
 
         // Initialization
     std::thread signalThread(Mp3Player::processSignals); 
-    int screenWidth = 800;
-    int screenHeight = 450;
+    const int screenWidth = 800;
+    const int screenHeight = 450;
     InitWindow(screenWidth, screenHeight, "Hello Raylib");
     SetTargetFPS(60);
-    Rectangle prevButton = { 50, 200, 100, 40 };
-    Rectangle pauseButton = { 200, 200, 100, 40 };
-    Rectangle nextButton = { 350, 200, 100, 40 };
-    bool paused=true;
     // Main game loop
     while (!WindowShouldClose())
     {
-        if (CheckCollisionPointRec(GetMousePosition(), prevButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
-        {
-            send_signal(4);
-            printf("Previous Song\n");
-        }
-
-        if (CheckCollisionPointRec(GetMousePosition(), pauseButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
-        {
-            Mp3Player::signal = paused ? 2 : 1;
-            Mp3Player::recvdSignal = true;
-            if(paused){
-                send_signal(2);
-                paused = false;
-            }
-            else {
-                send_signal(1);
-                paused = true;
-            }
-            printf("pause\n");
-        }
-
-        if (CheckCollisionPointRec(GetMousePosition(), nextButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
-        {
-            send_signal(3);
-            printf("Next Song\n");
-        }
+        float scale = std::min((float)GetScreenWidth()/screenWidth, (float)GetScreenHeight()/screenHeight);
+        Vector2 mouse = GetMousePosition();
+        
+        Vector2 virtualMouse = { 0 };
+        virtualMouse.x = (mouse.x - (GetScreenWidth() - (screenWidth*scale))*0.5f)/scale;
+        virtualMouse.y = (mouse.y - (GetScreenHeight() - (screenHeight*scale))*0.5f)/scale;
+        virtualMouse = Vector2Clamp(virtualMouse, (Vector2){ 0, 0 }, (Vector2){ (float)screenWidth, (float)screenHeight });
+        process_button_events(); 
 
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
         DrawRectangleRec(prevButton, LIGHTGRAY);
-        DrawText("Prev", prevButton.x + 10, prevButton.y + 10, 20, DARKGRAY);
+        DrawText("Prev", prevButton.x + 10, prevButton.y + 10, 20, BLUE);
         DrawRectangleRec(pauseButton, LIGHTGRAY);
-        DrawText("Start", pauseButton.x + 10, pauseButton.y + 10, 20, DARKGRAY);
+        DrawText("Start", pauseButton.x + 10, pauseButton.y + 10, 20, BLUE);
         DrawRectangleRec(nextButton, LIGHTGRAY);
-        DrawText("Next", nextButton.x + 10, nextButton.y + 10, 20, DARKGRAY);
+        DrawText("Next", nextButton.x + 10, nextButton.y + 10, 20, BLUE);
+        DrawRectangleRec(testButton, LIGHTGRAY);
         std::string currSongStr = Mp3Player::currentSong.songname;
-        DrawText(currSongStr.c_str(), screenWidth/2, screenHeight-40, 20, DARKGRAY);
+        DrawText(currSongStr.c_str(), screenWidth/2, 60, 20, BLUE);
         EndDrawing();
     } 
     send_signal(7);

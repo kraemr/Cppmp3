@@ -31,19 +31,25 @@ namespace Mp3Player
 ma_result result;
 ma_engine engine;
 ma_sound sound;
+
 volatile bool playOnLoad=true;
 volatile bool isInitialized=false;
 volatile bool playlistLoaded=false;
-std::atomic <bool> recvdSignal=false;
+
+std::atomic <bool> recvdSignal=false; // HAS to be atomic to avoid data race shenanigans
 volatile bool exit=false;
+
 i32 currentSongId=0;
 i32 signal=0;
 i64 nano_delay = 10000000;
+bool amplification_allowed = false;
+float volume = 0.8f;
 Song currentSong;
 std::vector<Playlist> playlistsVec;
 Playlist* currentPlaylist=nullptr;
 
 i32 initMp3Player(){
+    exit = false;
     result = (ma_result)ma_engine_init(NULL, &engine);
     if (result != MA_SUCCESS) {
         printf("Failed to initialize audio engine.");
@@ -53,6 +59,31 @@ i32 initMp3Player(){
     isInitialized = true;
     return 0;
 }
+
+
+
+// You can pass 100% for full volume and 0% for muting
+void setVolumePercent(float percent){
+    if(amplification_allowed){
+        volume = percent/100.0f;
+        ma_engine_set_volume(&engine,volume);
+    }
+    else{
+        percent = percent > 100.0f ? 100.0f : percent;
+        volume = percent/100.0f;
+        ma_engine_set_volume(&engine,volume);
+    }
+}
+
+unsigned long long getCurrentFrame(){
+
+}
+
+
+float getVolumePercent(){
+    return volume * 100.0f;
+}
+
 
 i32 initPlaySound(const std::string filepath){
     (void)ma_sound_uninit(&sound); // uninit seems to be safe to use when uninitialized :)
